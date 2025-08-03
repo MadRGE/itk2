@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Google OAuth</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .config-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Google OAuth Configuration</h1>
+    
+    <div class="config-item">
+        <h3>1. Client ID</h3>
+        <p>Valor actual: <code id="client-id">Cargando...</code></p>
+        <p>✅ Debe terminar en <code>.apps.googleusercontent.com</code></p>
+    </div>
+
+    <div class="config-item">
+        <h3>2. URI de Redirección</h3>
+        <p>Valor actual: <code id="redirect-uri">Cargando...</code></p>
+        <p>✅ Debe coincidir exactamente con Google Cloud Console</p>
+    </div>
+
+    <div class="config-item">
+        <h3>3. Ámbitos (Scopes)</h3>
+        <div id="scopes">Cargando...</div>
+    </div>
+
+    <div class="config-item">
+        <h3>4. URL de Autorización</h3>
+        <p><a id="auth-url" href="#" target="_blank">Probar URL de autorización</a></p>
+    </div>
+
+    <div class="config-item">
+        <h3>5. Checklist Manual</h3>
+        <ul>
+            <li>☐ Client ID copiado correctamente de Google Cloud Console</li>
+            <li>☐ URI de redirección configurada en Google Cloud Console</li>
+            <li>☐ Ámbitos seleccionados en Pantalla de Consentimiento</li>
+            <li>☐ Usuario añadido como "Usuario de prueba" (si está en modo pruebas)</li>
+            <li>☐ APIs habilitadas (Sheets y Drive)</li>
+        </ul>
+    </div>
+
+    <script>
+        // Simular la configuración que usaría la app
+        const GOOGLE_CLIENT_ID = 'TU_CLIENT_ID_AQUI'; // Reemplaza con tu Client ID real
+        const GOOGLE_REDIRECT_URI = window.location.origin;
+        const GOOGLE_SCOPES = [
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile', 
+            'https://www.googleapis.com/auth/spreadsheets.readonly',
+            'https://www.googleapis.com/auth/drive.readonly'
+        ].join(' ');
+
+        // Mostrar configuración
+        document.getElementById('client-id').textContent = GOOGLE_CLIENT_ID || 'NO CONFIGURADO';
+        document.getElementById('redirect-uri').textContent = GOOGLE_REDIRECT_URI;
+        
+        const scopesDiv = document.getElementById('scopes');
+        const scopesList = GOOGLE_SCOPES.split(' ');
+        scopesDiv.innerHTML = scopesList.map(scope => `<p>✅ <code>${scope}</code></p>`).join('');
+
+        // Generar URL de autorización
+        const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+        authUrl.searchParams.set('client_id', GOOGLE_CLIENT_ID);
+        authUrl.searchParams.set('redirect_uri', GOOGLE_REDIRECT_URI);
+        authUrl.searchParams.set('response_type', 'code');
+        authUrl.searchParams.set('scope', GOOGLE_SCOPES);
+        authUrl.searchParams.set('state', 'google_oauth');
+        authUrl.searchParams.set('access_type', 'offline');
+        authUrl.searchParams.set('prompt', 'consent');
+        
+        document.getElementById('auth-url').href = authUrl.toString();
+
+        // Validaciones
+        const clientIdElement = document.querySelector('.config-item:nth-child(2)');
+        if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'TU_CLIENT_ID_AQUI') {
+            clientIdElement.classList.add('error');
+        } else if (GOOGLE_CLIENT_ID.endsWith('.apps.googleusercontent.com')) {
+            clientIdElement.classList.add('success');
+        } else {
+            clientIdElement.classList.add('warning');
+        }
+    </script>
+</body>
+</html>
